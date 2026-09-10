@@ -1,0 +1,26 @@
+{
+  "name": "pi-fragments",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Composable inline Markdown prompt fragments for Pi",
+  "type": "module",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/thomaspeklak/pi-fragments.git" },
+  "keywords": ["pi-package"],
+  "engines": { "node": ">=22.19.0" },
+  "pi": { "extensions": ["./extensions/fragments.ts"] },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.85.1",
+    "@earendil-works/pi-tui": "0.85.1",
+    "@types/node": "^22.19.0",
+    "typescript": "^5.9.3"
+  }
+}
