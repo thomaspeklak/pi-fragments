@@ -128,23 +128,6 @@ function parseArguments(raw: string | undefined): ParsedArguments {
 	return { values };
 }
 
-function unknownName(kind: string, value: string, choices: string[]): string {
-	// Edit distance is advisory only: never silently correct an unknown name.
-	function distance(candidate: string): number {
-		let row = Array.from({ length: candidate.length + 1 }, (_, i) => i);
-		for (let i = 0; i < value.length; i++) {
-			const next = [i + 1];
-			for (let j = 0; j < candidate.length; j++) {
-				next.push(Math.min(next[j] + 1, row[j + 1] + 1, row[j] + Number(value[i] !== candidate[j])));
-			}
-			row = next;
-		}
-		return row[candidate.length];
-	}
-	const closest = choices.map((name) => ({ name, distance: distance(name) })).sort((a, b) => a.distance - b.distance)[0];
-	const hint = closest && closest.distance <= 2 ? ` Did you mean "${closest.name}"?` : "";
-	return `Unknown ${kind} "${value}".${hint} Allowed: ${choices.join(", ")}.`;
-}
 function argumentSuggestions(raw: string, template: FragmentTemplate, afterCursor: string): { prefix: string; items: AutocompleteItem[] } {
 	const entries = raw.split(",");
 	const current = entries.pop()!.trimStart();
@@ -371,11 +354,8 @@ export default function (pi: ExtensionAPI): void {
 				const [token, boundary, marker, rawName] = match;
 				if (match.index! < lastIndex) continue;
 				const fragment = fragments.get(rawName.toLowerCase());
-				if (!fragment) {
-					// A double colon is an explicit fragment request; a lone colon may be prose.
-					if (marker === "::") throw new Error(unknownName("fragment", rawName.toLowerCase(), [...fragments.keys()]));
-					continue;
-				}
+				// Only registered names are fragments; unknown markers remain ordinary text.
+				if (!fragment) continue;
 				let end = match.index! + token.length;
 				let raw: string | undefined;
 				if (event.text[end] === "(") {

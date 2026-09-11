@@ -54,7 +54,7 @@ The [examples](examples/fragments) are invented, optional starting points. Copy 
 
 ### Invocation and arguments
 
-`::name`, `::name()`, and `::name(key:value,other:value)` work within prose, including quoted text. A known `:name` also expands, but autocomplete uses double colons. Unknown double-colon names block submission with a suggestion when possible; unknown single-colon names remain prose. Markers inside words and URLs are not invocations.
+`::name`, `::name()`, and `::name(key:value,other:value)` work within prose, including quoted text. A known `:name` also expands, but autocomplete uses double colons. Unknown names remain ordinary text with either single or double colons (for example, `::regclass`), even when followed by parentheses. Only registered fragment names are expanded and have their arguments validated. Markers inside words and URLs are not invocations.
 
 Arguments are comma-separated. Keys begin with an ASCII letter and contain letters, digits, `_`, or `-`; values begin with a letter or digit and contain those same characters. Keys normalize to lowercase; values preserve case. Whitespace around comma-separated items is allowed, but not around the colon. Duplicate keys (ignoring case), empty values, spaces/quotes in values, and malformed parentheses are rejected. Arbitrary keys are accepted, not just keys declared in defaults.
 

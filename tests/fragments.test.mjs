@@ -91,13 +91,23 @@ function completionHarness() {
   return provider;
 }
 
-test("ordinary input and unknown single-colon prose stay unchanged", async () => {
-  for (const text of ["ordinary text", ":not-a-fragment", "C++ namespace::method", "https://example.test"]) {
+test("ordinary input and unknown fragment markers stay unchanged", async () => {
+  for (const text of ["ordinary text", ":not-a-fragment", "::regclass", "'table'::regclass", "::summry", "::not-found(foo:bar)", "::not-found(unclosed", "C++ namespace::method", "https://example.test"]) {
     const result = await expand(text);
     assert.equal(result.action, "continue");
     assert.deepEqual(result.notifications, []);
     assert.equal(result.draft, undefined);
+    assert.deepEqual(result.emitted, []);
   }
+});
+
+test("unknown markers remain literal alongside known fragments", async () => {
+  const result = await expand("::regclass ::review(scope:auth) ::not-found(foo:bar) ::review ::summry");
+  assert.equal(result.action, "transform");
+  assert.equal(result.text, "::regclass scope=auth; ::not-found(foo:bar) scope=all; ::summry");
+  assert.deepEqual(result.notifications, []);
+  assert.equal(result.draft, undefined);
+  assert.deepEqual(result.emitted, [{ name: "prompt-fragment:expanded", payload: { names: ["review"] } }]);
 });
 
 
@@ -111,7 +121,7 @@ test("composition, defaults, case-insensitive lookup, literal body markers", asy
   assert.equal((await expand('"::checklist"')).text, `"${checklist}"`);
   assert.equal((await expand("::condition(scope:all)")).text, "Scope: all {{defaults.scope}} {{unknown}}");
 });
-for (const input of ["::review(scope:a,SCOPE:b)", "::review(scope:)", "::review(scope:a,)", "::review(scope:a", "::review(scope:(a))", "::review(scope:a)oops", "::review ::not-found"]) {
+for (const input of ["::review(scope:a,SCOPE:b)", "::review(scope:)", "::review(scope:a,)", "::review(scope:a", "::review(scope:(a))", "::review(scope:a)oops", "::regclass ::review(scope:a"]) {
   test(`atomic error and draft restoration: ${input}`, async () => {
     const result = await expand(input);
     assert.equal(result.action, "handled");
